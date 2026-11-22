@@ -18,6 +18,8 @@ h1{font-size:20px;margin:0 0 4px}
 .meta{color:var(--muted);margin:0 0 18px;word-break:break-word}
 a.dl{display:block;text-align:center;background:var(--btn);color:var(--btn-ink);text-decoration:none;
   font-weight:600;font-size:19px;padding:22px 16px;border-radius:14px;-webkit-touch-callout:default}
+#list{display:flex;flex-direction:column;gap:10px}
+#list a.dl{font-size:17px;padding:16px}
 ol{padding-left:22px;margin:18px 0 0}
 li{margin:6px 0}
 .err{color:#d1453b}
@@ -29,8 +31,9 @@ li{margin:6px 0}
     <h1 id="name">Загрузка</h1>
     <p class="meta" id="label"></p>
     <a class="dl" id="dl" href="#" hidden>⬇ Скачать</a>
+    <div id="list" hidden></div>
     <ol id="how" hidden>
-      <li><b>Нажмите и удерживайте</b> синюю кнопку.</li>
+      <li><b>Нажмите и удерживайте</b> синюю кнопку<span id="many" hidden> (каждую нужную серию)</span>.</li>
       <li>В меню выберите <b>«Загрузить файл по ссылке»</b>.</li>
       <li>Safari качает сам, в фоне: прогресс — на экране блокировки и под стрелкой в адресной строке.</li>
     </ol>
@@ -46,12 +49,35 @@ li{margin:6px 0}
   });
   // убрать подписанную ссылку из адреса и истории вкладки
   try { history.replaceState(null, "", location.pathname); } catch (e) {}
-  if (!/^https?:\/\//i.test(p.u || "")) { document.getElementById("err").hidden = false; return; }
-  var a = document.getElementById("dl");
-  a.href = p.u;
-  if (p.n) { a.setAttribute("download", p.n); a.textContent = "⬇ " + p.n; document.getElementById("name").textContent = p.n; }
-  if (p.t) document.getElementById("label").textContent = "Разрешение: " + p.t;
-  a.hidden = false;
+  var ok = function (u) { return /^https?:\/\//i.test(u || ""); };
+  var items = [];
+  if (p.l) {
+    p.l.split("\n").forEach(function (line) {
+      var i = line.indexOf(" ");
+      var u = i > 0 ? line.slice(0, i) : line, n = i > 0 ? line.slice(i + 1) : "";
+      if (ok(u)) items.push({ u: u, n: n || u.split("/").pop().split("?")[0] });
+    });
+  } else if (ok(p.u)) {
+    items.push({ u: p.u, n: p.n || "" });
+  }
+  if (!items.length) { document.getElementById("err").hidden = false; return; }
+  if (p.t) document.getElementById("label").textContent = (p.l ? "" : "Разрешение: ") + p.t;
+  if (items.length === 1 && !p.l) {
+    var a = document.getElementById("dl");
+    a.href = items[0].u;
+    if (items[0].n) { a.setAttribute("download", items[0].n); a.textContent = "⬇ " + items[0].n; document.getElementById("name").textContent = items[0].n; }
+    a.hidden = false;
+  } else {
+    var list = document.getElementById("list");
+    items.forEach(function (it) {
+      var b = document.createElement("a");
+      b.className = "dl"; b.href = it.u; b.textContent = "⬇ " + it.n;
+      list.appendChild(b);
+    });
+    list.hidden = false;
+    document.getElementById("name").textContent = "Серий: " + items.length;
+    document.getElementById("many").hidden = false;
+  }
   document.getElementById("how").hidden = false;
 })();
 </script>
