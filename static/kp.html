@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>Загрузка</title>
+<style>
+:root{--bg:#f4f5f7;--ink:#1d2430;--muted:#5b6676;--btn:#1f6feb;--btn-ink:#fff;--card:#fff;--edge:#dde2ea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--ink:#e8ebf0;--muted:#9aa4b2;--btn:#3b82f6;--btn-ink:#fff;--card:#1a1f26;--edge:#2a313b}}
+:root[data-theme="dark"]{--bg:#111418;--ink:#e8ebf0;--muted:#9aa4b2;--btn:#3b82f6;--btn-ink:#fff;--card:#1a1f26;--edge:#2a313b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:520px;margin:0 auto;padding:28px 16px}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:16px;padding:20px}
+h1{font-size:20px;margin:0 0 4px}
+.meta{color:var(--muted);margin:0 0 18px;word-break:break-word}
+a.dl{display:block;text-align:center;background:var(--btn);color:var(--btn-ink);text-decoration:none;
+  font-weight:600;font-size:19px;padding:22px 16px;border-radius:14px;-webkit-touch-callout:default}
+ol{padding-left:22px;margin:18px 0 0}
+li{margin:6px 0}
+.err{color:#d1453b}
+</style>
+</head>
+<body>
+<main>
+  <div class="card" id="card">
+    <h1 id="name">Загрузка</h1>
+    <p class="meta" id="label"></p>
+    <a class="dl" id="dl" href="#" hidden>⬇ Скачать</a>
+    <ol id="how" hidden>
+      <li><b>Нажмите и удерживайте</b> синюю кнопку.</li>
+      <li>В меню выберите <b>«Загрузить файл по ссылке»</b>.</li>
+      <li>Safari качает сам, в фоне: прогресс — на экране блокировки и под стрелкой в адресной строке.</li>
+    </ol>
+    <p class="err" id="err" hidden>Нет ссылки на файл. Запустите шорткат ещё раз.</p>
+  </div>
+</main>
+<script>
+(function () {
+  var p = {};
+  location.hash.replace(/^#/, "").split("&").forEach(function (kv) {
+    var i = kv.indexOf("=");
+    if (i > 0) { try { p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1)); } catch (e) {} }
+  });
+  // убрать подписанную ссылку из адреса и истории вкладки
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+  if (!/^https?:\/\//i.test(p.u || "")) { document.getElementById("err").hidden = false; return; }
+  var a = document.getElementById("dl");
+  a.href = p.u;
+  if (p.n) { a.setAttribute("download", p.n); a.textContent = "⬇ " + p.n; document.getElementById("name").textContent = p.n; }
+  if (p.t) document.getElementById("label").textContent = "Разрешение: " + p.t;
+  a.hidden = false;
+  document.getElementById("how").hidden = false;
+})();
+</script>
+</body>
+</html>
